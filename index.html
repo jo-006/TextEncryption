@@ -1,0 +1,110 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Encryption Toolkit</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/axios/0.21.1/axios.min.js"></script>
+</head>
+<body class="bg-gray-100">
+    <div class="container mx-auto max-w-4xl p-4">
+        <h1 class="text-3xl font-bold text-center mb-6">Encryption Toolkit</h1>
+
+        <div class="bg-white shadow-md rounded-lg">
+            <div class="flex border-b">
+                <button onclick="showTab('aes')" class="w-1/3 py-3 tab-btn active" id="aes-tab">AES</button>
+                <button onclick="showTab('des')" class="w-1/3 py-3 tab-btn" id="des-tab">DES</button>
+                <button onclick="showTab('rsa')" class="w-1/3 py-3 tab-btn" id="rsa-tab">RSA</button>
+            </div>
+
+            <div id="aes-content" class="p-6 tab-content">
+                <h2 class="text-xl font-semibold mb-4">AES Encryption</h2>
+                <div class="space-y-4">
+                    <textarea id="aes-input" class="w-full border p-2 rounded" placeholder="Enter text to encrypt"></textarea>
+                    <input type="text" id="aes-key" class="w-full border p-2 rounded" placeholder="Enter encryption key">
+                    <div class="flex space-x-2">
+                        <button onclick="encrypt('aes')" class="w-1/2 bg-blue-500 text-white py-2 rounded">Encrypt</button>
+                        <button onclick="decrypt('aes')" class="w-1/2 bg-gray-500 text-white py-2 rounded">Decrypt</button>
+                    </div>
+                    <input type="text" id="aes-result" class="w-full border p-2 rounded" readonly placeholder="Result will appear here">
+                </div>
+            </div>
+
+            <div id="des-content" class="p-6 tab-content hidden">
+                <h2 class="text-xl font-semibold mb-4">DES Encryption</h2>
+                <div class="space-y-4">
+                    <textarea id="des-input" class="w-full border p-2 rounded" placeholder="Enter text to encrypt"></textarea>
+                    <input type="text" id="des-key" class="w-full border p-2 rounded" placeholder="Enter encryption key">
+                    <div class="flex space-x-2">
+                        <button onclick="encrypt('des')" class="w-1/2 bg-blue-500 text-white py-2 rounded">Encrypt</button>
+                        <button onclick="decrypt('des')" class="w-1/2 bg-gray-500 text-white py-2 rounded">Decrypt</button>
+                    </div>
+                    <input type="text" id="des-result" class="w-full border p-2 rounded" readonly placeholder="Result will appear here">
+                </div>
+            </div>
+
+            <div id="rsa-content" class="p-6 tab-content hidden">
+                <h2 class="text-xl font-semibold mb-4">RSA Encryption</h2>
+                <div class="space-y-4">
+                    <textarea id="rsa-input" class="w-full border p-2 rounded" placeholder="Enter text to encrypt"></textarea>
+                    <div class="flex space-x-2">
+                        <button onclick="encrypt('rsa')" class="w-1/2 bg-blue-500 text-white py-2 rounded">Encrypt</button>
+                        <button onclick="decrypt('rsa')" class="w-1/2 bg-gray-500 text-white py-2 rounded">Decrypt</button>
+                    </div>
+                    <input type="text" id="rsa-result" class="w-full border p-2 rounded" readonly placeholder="Result will appear here">
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        function showTab(type) {
+            // Hide all tabs
+            ['aes', 'des', 'rsa'].forEach(t => {
+                document.getElementById(`${t}-content`).classList.add('hidden');
+                document.getElementById(`${t}-tab`).classList.remove('active');
+            });
+
+            // Show selected tab
+            document.getElementById(`${type}-content`).classList.remove('hidden');
+            document.getElementById(`${type}-tab`).classList.add('active');
+        }
+
+        async function encrypt(type) {
+            const input = document.getElementById(`${type}-input`).value;
+            const key = type !== 'rsa' ? document.getElementById(`${type}-key`).value : '';
+            const resultEl = document.getElementById(`${type}-result`);
+
+            try {
+                const response = await axios.post('/encrypt', {
+                    type: type,
+                    text: input,
+                    key: key
+                });
+
+                resultEl.value = response.data.encrypted;
+            } catch (error) {
+                resultEl.value = `Error: ${error.response ? error.response.data.error : error.message}`;
+            }
+        }
+
+        async function decrypt(type) {
+            const input = document.getElementById(`${type}-result`).value;
+            const key = type !== 'rsa' ? document.getElementById(`${type}-key`).value : '';
+            const resultEl = document.getElementById(`${type}-result`);
+
+            try {
+                const response = await axios.post('/decrypt', {
+                    type: type,
+                    text: input,
+                    key: key
+                });
+
+                resultEl.value = response.data.decrypted;
+            } catch (error) {
+                resultEl.value = `Error: ${error.response ? error.response.data.error : error.message}`;
+            }
+        }
+    </script>
+</body>
+</html>
